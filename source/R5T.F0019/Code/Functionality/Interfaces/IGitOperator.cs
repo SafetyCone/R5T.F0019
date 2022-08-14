@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 using LibGit2Sharp;
+using LibGit2Sharp.Handlers;
 
+using R5T.Aalborg;
 using R5T.Magyar;
 
 using R5T.T0132;
@@ -14,6 +18,25 @@ namespace R5T.F0019
     [FunctionalityMarker]
     public interface IGitOperator : IFunctionalityMarker
     {
+        public string Clone_NonIdempotent(
+            string sourceUrl,
+            string localRepositoryDirectoryPath,
+            Authentication authentication)
+        {
+            var options = new CloneOptions
+            {
+                CredentialsProvider = new CredentialsHandler((url, usernameFromUrl, types) =>
+                    new UsernamePasswordCredentials()
+                    {
+                        Username = authentication.Username,
+                        Password = authentication.Password,
+                    }),
+            };
+
+            var repositoryDirectoryPath = Repository.Clone(sourceUrl, localRepositoryDirectoryPath, options);
+            return repositoryDirectoryPath;
+        }
+
         /// <summary>
         /// Returns the <inheritdoc cref="Glossary.ForDirectories.RepositoryGitDirectory" path="/name"/> path if the provided path is part of a repository, or the <see cref="L0001.Z000.IValues.RepositoryDiscoveryNotFoundResult"/> if not.
         /// </summary>
