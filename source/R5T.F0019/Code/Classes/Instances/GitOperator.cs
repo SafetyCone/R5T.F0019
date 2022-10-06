@@ -7,7 +7,7 @@ namespace R5T.F0019
     {
         #region Infrastructure
 
-        public static GitOperator Instance { get; } = new();
+        public static IGitOperator Instance { get; } = new GitOperator();
 
         private GitOperator()
         {

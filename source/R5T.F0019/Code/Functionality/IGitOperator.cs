@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using LibGit2Sharp;
 using LibGit2Sharp.Handlers;
 
-using R5T.Aalborg;
 using R5T.Magyar;
 
+using R5T.T0046;
 using R5T.T0132;
+using R5T.T0144;
 
 using Glossary = R5T.Y0004.Glossary;
 
@@ -35,6 +37,26 @@ namespace R5T.F0019
 
             var repositoryDirectoryPath = Repository.Clone(sourceUrl, localRepositoryDirectoryPath, options);
             return repositoryDirectoryPath;
+        }
+
+        public void Commit(
+            string localRepositoryDirectoryPath,
+            string commitMessage,
+            Author author)
+        {
+            var authorSignature = new Signature(author.Name, author.EmailAddress, DateTime.Now);
+            var committerSignature = authorSignature;
+
+            using var repository = new Repository(localRepositoryDirectoryPath);
+
+            var anyToCommit = repository.Index.Where(x => x.StageLevel == StageLevel.Staged).Any();
+            if (anyToCommit)
+            {
+                repository.Commit(
+                    commitMessage,
+                    authorSignature,
+                    committerSignature);
+            }
         }
 
         /// <summary>
@@ -72,6 +94,25 @@ namespace R5T.F0019
         }
 
         /// <summary>
+        /// A quality-of-life overload for <see cref="GetRepository(string)"/>.
+        /// </summary>
+        public string GetRepositoryDirectoryPath(string path)
+        {
+            var repositoryDirectoryPath = this.GetRepository(path);
+            return repositoryDirectoryPath;
+        }
+
+        public string GetRepositoryRemoteUrl(string path)
+        {
+            var repositoryDirectory = this.GetRepository(path);
+
+            using var repository = new Repository(repositoryDirectory);
+
+            var remoteUrl = Instances.RepositoryOperator.GetRemoteUrl(repository);
+            return remoteUrl;
+        }
+
+        /// <summary>
         /// Returns the <inheritdoc cref="Glossary.ForDirectories.RepositoryGitDirectory" path="/name"/> path.
         /// </summary>
         public WasFound<string> HasRepository_GitDirectory(string path)
@@ -85,6 +126,54 @@ namespace R5T.F0019
                 repositoryGitDirectoryPathOrNotFound);
 
             return output;
+        }
+
+        // Prior work in R5T.D0038.L0001.
+        // No logging or result infrastructure to allow this method to just be simple functionality.
+        public bool HasUnpushedLocalChanges(string repositoryDirectoryPath)
+        {
+            using var repository = new Repository(repositoryDirectoryPath);
+
+            // Assume no unpushed changes.
+            var hasUnPushedChanges = false;
+
+            // Are there any untracked files? (Other than ignored files.)
+            // => I think the below takes care of this.
+
+            // Are there any unstaged or uncommitted changes?
+            var treeChanges = repository.Diff.Compare<TreeChanges>(
+                repository.Head.Tip.Tree,
+                DiffTargets.Index | DiffTargets.WorkingDirectory);
+
+            hasUnPushedChanges = treeChanges.Count > 0;
+            if (hasUnPushedChanges)
+            {
+                return hasUnPushedChanges;
+            }
+
+            // Get the current branch.
+            var currentBranch = repository.Head;
+
+            // Is the current branch untracked? This indicates that it has not been pushed to the remote!
+            var isUntracked = !currentBranch.IsTracking;
+
+            hasUnPushedChanges = isUntracked;
+            if (hasUnPushedChanges)
+            {
+                return hasUnPushedChanges;
+            }
+
+            // Is the current branch ahead its remote tracking branch?
+            var currentBranchLocalIsAheadOfRemote = currentBranch.TrackingDetails.AheadBy > 0;
+
+            hasUnPushedChanges = currentBranchLocalIsAheadOfRemote;
+            if (hasUnPushedChanges)
+            {
+                return hasUnPushedChanges;
+            }
+
+            // Finally, return the originally assumed value, that there are no unpushed changes.
+            return hasUnPushedChanges;
         }
 
         /// <summary>
@@ -172,6 +261,39 @@ namespace R5T.F0019
             return true;
         }
 
+        public string[] ListAllUnstagedPaths(string localRepositoryDirectoryPath)
+        {
+            using var repository = new Repository(localRepositoryDirectoryPath);
+
+            var unstagedPaths = repository.Diff.Compare<TreeChanges>(repository.Head.Tip.Tree, DiffTargets.WorkingDirectory)
+                  .Select(xChange => xChange.Path)
+                  .ToArray();
+
+            return unstagedPaths;
+        }
+
+        /// <summary>
+        /// Push the HEAD branch.
+        /// </summary>
+        public void Push(
+            string localRepositoryDirectoryPath,
+            Authentication authentication)
+        {
+            using var repository = new Repository(localRepositoryDirectoryPath);
+
+            var pushOptions = new PushOptions
+            {
+                CredentialsProvider = new CredentialsHandler((url, usernameFromUrl, types) =>
+                    new UsernamePasswordCredentials()
+                    {
+                        Username = authentication.Username,
+                        Password = authentication.Password,
+                    })
+            };
+
+            repository.Network.Push(repository.Head, pushOptions);
+        }
+
         /// <summary>
         /// Evaluates the result of a <see cref="Repository.Discover(string)"/> call to determine whether a repository was discovered.
         /// </summary>
@@ -181,6 +303,33 @@ namespace R5T.F0019
 
             var wasDiscovered = !wasNotDiscovered;
             return wasDiscovered;
+        }
+
+        public void Stage(
+            string localRepositoryDirectoryPath,
+            IEnumerable<string> filePaths)
+        {
+            using var repository = new Repository(localRepositoryDirectoryPath);
+
+            // Stage paths, if any.
+            if (filePaths.Any())
+            {
+                Commands.Stage(repository, filePaths);
+            }
+        }
+
+        /// <summary>
+        /// Stages changes and returns the number of unstaged paths.
+        /// </summary>
+        public int StageAllUnstagedPaths(string localRepositoryDirectoryPath)
+        {
+            var unstagedPaths = this.ListAllUnstagedPaths(localRepositoryDirectoryPath);
+
+            this.Stage(localRepositoryDirectoryPath,
+                unstagedPaths);
+
+            var unstagedPathsCount = unstagedPaths.Length;
+            return unstagedPathsCount;
         }
     }
 }
