@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 using LibGit2Sharp;
 using LibGit2Sharp.Handlers;
 
-using R5T.Magyar;
-
+using R5T.F0000;
 using R5T.T0046;
 using R5T.T0132;
 using R5T.T0144;
