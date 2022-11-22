@@ -19,6 +19,13 @@ namespace R5T.F0019
     [FunctionalityMarker]
     public interface IGitOperator : IFunctionalityMarker
     {
+        /// <summary>
+        /// Non-idempotently clones a remote Git repository to a local directory path.
+        /// An error will be thrown if the local directory is not empty, if it exists.
+        /// </summary>
+        /// <returns>
+        /// The local repository directory path.
+        /// </returns>
         public string Clone_NonIdempotent(
             string sourceUrl,
             string localRepositoryDirectoryPath,
@@ -34,6 +41,8 @@ namespace R5T.F0019
                     }),
             };
 
+            // Safety check that local repository directory path is empty (if exists), it performed here.
+            // LibGit2Sharp.NameConflictException, '{directory path}' exists and is not an empty directory
             var repositoryDirectoryPath = Repository.Clone(sourceUrl, localRepositoryDirectoryPath, options);
             return repositoryDirectoryPath;
         }
