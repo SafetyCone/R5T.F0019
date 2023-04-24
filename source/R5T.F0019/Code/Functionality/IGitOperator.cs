@@ -68,7 +68,7 @@ namespace R5T.F0019
         }
 
         /// <summary>
-        /// Returns the <inheritdoc cref="Glossary.ForDirectories.RepositoryGitDirectory" path="/name"/> path if the provided path is part of a repository, or the <see cref="L0001.Z000.IValues.RepositoryDiscoveryNotFoundResult"/> if not.
+        /// Returns the <inheritdoc cref="Glossary.ForDirectories.RepositoryGitDirectory" path="/name"/> path if the provided path is part of a repository, or the <see cref="L0001.Z000.IValues.RepositoryDiscoverNotFoundResult"/> if not.
         /// </summary>
         /// <param name="path">A directory or file path.</param>
         public string DiscoverRepositoryGitDirectory(string path)
@@ -307,7 +307,7 @@ namespace R5T.F0019
         /// </summary>
         public bool RepositoryWasDiscovered(string repositoryDiscoveryResult)
         {
-            var wasNotDiscovered = Instances.Values_ForLibGit2Sharp.RepositoryDiscoveryNotFoundResult == repositoryDiscoveryResult;
+            var wasNotDiscovered = Instances.Values_ForLibGit2Sharp.RepositoryDiscoverNotFoundResult == repositoryDiscoveryResult;
 
             var wasDiscovered = !wasNotDiscovered;
             return wasDiscovered;
