@@ -102,7 +102,8 @@ namespace R5T.F0019
         }
 
         /// <summary>
-        /// A quality-of-life overload for <see cref="GetRepository(string)"/>.
+        /// <para>A quality-of-life overload for <see cref="GetRepository(string)"/>.</para>
+        /// <inheritdoc cref="GetRepository(string)"/>
         /// </summary>
         public string GetRepositoryDirectoryPath(string path)
         {
@@ -185,7 +186,7 @@ namespace R5T.F0019
         }
 
         /// <summary>
-        /// Returns the <inheritdoc cref="Glossary.ForDirectories.RepositoryDirectory" path="/name"/> path.
+        /// Returns the <inheritdoc cref="Glossary.ForDirectories.RepositoryDirectory" path="/name"/> path given a file or directory path from within the repository.
         /// </summary>
         public WasFound<string> HasRepository(string path)
         {
