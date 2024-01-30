@@ -5,16 +5,23 @@ using System.Linq;
 using LibGit2Sharp;
 using LibGit2Sharp.Handlers;
 
+using R5T.L0089.T000;
 using R5T.T0046;
 using R5T.T0132;
 using R5T.T0144;
-using R5T.T0221;
 
 using Glossary = R5T.Y0004.Glossary;
 
 
 namespace R5T.F0019
 {
+    /// <summary>
+    /// A LibGit2Sharp-based Git operator.
+    /// </summary>
+    /// <remarks>
+    /// New work in R5T.L0083.F001.
+    /// Other work in R5T.D0038.L0001.
+    /// </remarks>
     [FunctionalityMarker]
     public interface IGitOperator : IFunctionalityMarker
     {
@@ -25,6 +32,9 @@ namespace R5T.F0019
         /// <returns>
         /// The local repository directory path.
         /// </returns>
+        /// <remarks>
+        /// See new work at R5T.L0083.F001.ILibGit2SharpOperator.Clone_NonIdempotent().
+        /// </remarks>
         public string Clone_NonIdempotent(
             string sourceUrl,
             string localRepositoryDirectoryPath,
@@ -192,7 +202,7 @@ namespace R5T.F0019
             var wasFound_GitDirectory = this.HasRepository_GitDirectory(path);
 
             var output = wasFound_GitDirectory.Convert(
-                gitDirectoryPath => Instances.PathOperator.GetParentDirectoryPath(gitDirectoryPath));
+                gitDirectoryPath => Instances.PathOperator.Get_ParentDirectoryPath(gitDirectoryPath));
 
             return output;
         }
@@ -228,7 +238,7 @@ namespace R5T.F0019
                 return false;
             }
 
-            var directoryName = Instances.PathOperator.GetDirectoryNameOfDirectoryPath(directoryPath);
+            var directoryName = Instances.PathOperator.Get_DirectoryName_OfDirectoryPath(directoryPath);
 
             var isGitDirectory = this.IsGitHiddenDirectory(directoryName);
 
@@ -255,7 +265,7 @@ namespace R5T.F0019
                 return false;
             }
 
-            var directoryName = Instances.PathOperator.GetDirectoryNameOfDirectoryPath(directoryPath);
+            var directoryName = Instances.PathOperator.Get_DirectoryName_OfDirectoryPath(directoryPath);
 
             var isGitDirectory = this.IsGitHiddenDirectory(directoryName);
 
