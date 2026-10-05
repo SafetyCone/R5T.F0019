@@ -40,7 +40,7 @@ namespace R5T.F0019
             string localRepositoryDirectoryPath,
             Authentication authentication)
         {
-            var options = new CloneOptions
+            var fetch_Options = new FetchOptions
             {
                 CredentialsProvider = new CredentialsHandler((url, usernameFromUrl, types) =>
                     new UsernamePasswordCredentials()
@@ -49,6 +49,8 @@ namespace R5T.F0019
                         Password = authentication.Password,
                     }),
             };
+
+            var options = new CloneOptions(fetch_Options);
 
             // Safety check that local repository directory path is empty (if exists), it performed here.
             // LibGit2Sharp.NameConflictException, '{directory path}' exists and is not an empty directory
